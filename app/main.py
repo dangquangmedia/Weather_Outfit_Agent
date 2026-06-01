@@ -112,7 +112,8 @@ def homepage() -> str:
         margin-bottom: 14px;
         font-weight: 700;
       }
-      input {
+      input,
+      select {
         min-height: 42px;
         border: 1px solid #b7c1cc;
         border-radius: 6px;
@@ -146,7 +147,16 @@ def homepage() -> str:
       <form id="outfit-form">
         <label>
           Địa danh
-          <input name="location" type="text" value="Hà Nội" required>
+          <select name="location_choice" id="location-choice">
+            <option value="Hà Nội">Hà Nội</option>
+            <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+            <option value="Đà Nẵng">Đà Nẵng</option>
+            <option value="Đà Lạt">Đà Lạt</option>
+            <option value="Huế">Huế</option>
+            <option value="Cần Thơ">Cần Thơ</option>
+            <option value="custom">Khác / tự nhập</option>
+          </select>
+          <input name="custom_location" id="custom-location" type="text" placeholder="Nhập địa danh khác">
         </label>
         <label>
           Ngày / thời điểm
@@ -158,7 +168,15 @@ def homepage() -> str:
         </label>
         <label>
           Ngữ cảnh
-          <input name="context" type="text" value="đi học">
+          <select name="context_choice" id="context-choice">
+            <option value="Văn phòng">Văn phòng</option>
+            <option value="Sinh viên / đi học">Sinh viên / đi học</option>
+            <option value="Đi chơi">Đi chơi</option>
+            <option value="Sự kiện lịch sự">Sự kiện lịch sự</option>
+            <option value="Du lịch">Du lịch</option>
+            <option value="custom">Khác / tự nhập</option>
+          </select>
+          <input name="custom_context" id="custom-context" type="text" placeholder="Nhập ngữ cảnh khác">
         </label>
         <label>
           Khả năng mưa (0 đến 1)
@@ -171,17 +189,36 @@ def homepage() -> str:
     <script>
       const form = document.querySelector("#outfit-form");
       const result = document.querySelector("#result");
+      const locationChoice = document.querySelector("#location-choice");
+      const customLocation = document.querySelector("#custom-location");
+      const contextChoice = document.querySelector("#context-choice");
+      const customContext = document.querySelector("#custom-context");
+
+      const syncCustomInputs = () => {
+        customLocation.hidden = locationChoice.value !== "custom";
+        customContext.hidden = contextChoice.value !== "custom";
+      };
+
+      locationChoice.addEventListener("change", syncCustomInputs);
+      contextChoice.addEventListener("change", syncCustomInputs);
+      syncCustomInputs();
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         result.textContent = "Đang tư vấn...";
 
         const data = new FormData(form);
+        const selectedLocation = String(data.get("location_choice") || "Hà Nội");
+        const selectedContext = String(data.get("context_choice") || "Văn phòng");
         const payload = {
-          location: String(data.get("location") || "địa điểm hiện tại"),
+          location: selectedLocation === "custom"
+            ? String(data.get("custom_location") || "địa điểm hiện tại")
+            : selectedLocation,
           date_text: String(data.get("date_text") || "hôm nay"),
           temperature_c: Number(data.get("temperature_c")),
-          context: String(data.get("context") || "hằng ngày"),
+          context: selectedContext === "custom"
+            ? String(data.get("custom_context") || "hằng ngày")
+            : selectedContext,
           rain_probability: Number(data.get("rain_probability") || 0),
         };
 

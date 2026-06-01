@@ -8,7 +8,8 @@ Mini app FastAPI demo tool calling:
 4. Return a lesson-friendly `toolTrace`.
 
 It also supports a direct temperature mode for quick outfit advice without
-calling the weather provider.
+calling the weather provider. The direct mode can adjust recommendations by
+location culture and activity context.
 
 ## Run
 
@@ -60,17 +61,20 @@ Body:
   "location": "Hà Nội",
   "date_text": "Thứ 2 ngày 01/06/2026",
   "temperature_c": 36,
-  "context": "đi học",
-  "rain_probability": 0.2
+  "context": "Văn phòng",
+  "rain_probability": 0.1
 }
 ```
 
 Example output:
 
 ```text
-Hôm nay Thứ 2 ngày 01/06/2026 tại Hà Nội, nhiệt độ 36°C, ngữ cảnh đi học, khả năng mưa 20%.
-Gợi ý: Áo thun cotton sáng màu, quần vải mỏng, giày thoáng và mang theo nước. Phù hợp cho đi học.
+Hôm nay Thứ 2 ngày 01/06/2026 tại Hà Nội, nhiệt độ 36°C, ngữ cảnh Văn phòng, khả năng mưa 10%.
+Gợi ý: Sơ mi linen hoặc polo sáng màu, quần chinos mỏng, giày loafer hoặc sneaker tối giản. Phù hợp cho Văn phòng. Vì ở Hà Nội, ưu tiên nét lịch sự, gọn gàng và kín đáo vừa phải.
 ```
+
+The homepage includes dropdowns for common locations and contexts, plus
+`Khác / tự nhập` options when you want a custom place or activity.
 
 ## Test
 

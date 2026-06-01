@@ -100,7 +100,8 @@ def test_temperature_outfit_agent_recommends_for_direct_temperature_input() -> N
     }
     assert "Thứ 2 ngày 01/06/2026 tại Hà Nội" in result["finalAnswer"]
     assert "36°C" in result["finalAnswer"]
-    assert "Áo thun cotton sáng màu" in result["outfitRecommendation"]
+    assert "Áo thun cotton hoặc polo" in result["outfitRecommendation"]
+    assert "Hà Nội" in result["outfitRecommendation"]
     assert [step["tool"] for step in result["toolTrace"]] == ["read_temperature_input", "recommend_outfit"]
 
 
@@ -124,8 +125,33 @@ def test_temperature_outfit_endpoint_returns_direct_recommendation() -> None:
     assert body["input"]["temperature_c"] == 36.0
     assert body["input"]["context"] == "đi học"
     assert "Hà Nội" in body["finalAnswer"]
-    assert "Áo thun cotton sáng màu" in body["outfitRecommendation"]
+    assert "Áo thun cotton hoặc polo" in body["outfitRecommendation"]
     assert body["toolTrace"][0]["tool"] == "read_temperature_input"
+
+
+def test_temperature_outfit_changes_by_location_and_work_context() -> None:
+    office_result = run_temperature_outfit_agent(
+        temperature_c=36,
+        context="Văn phòng",
+        location="Hà Nội",
+        date_text="Thứ 2 ngày 01/06/2026",
+        rain_probability=0.1,
+    )
+    student_result = run_temperature_outfit_agent(
+        temperature_c=36,
+        context="Sinh viên / đi học",
+        location="TP. Hồ Chí Minh",
+        date_text="Thứ 2 ngày 01/06/2026",
+        rain_probability=0.1,
+    )
+
+    assert office_result["outfitRecommendation"] != student_result["outfitRecommendation"]
+    assert "sơ mi linen" in office_result["outfitRecommendation"].lower()
+    assert "văn phòng" in office_result["outfitRecommendation"].lower()
+    assert "Hà Nội" in office_result["outfitRecommendation"]
+    assert "áo thun" in student_result["outfitRecommendation"].lower()
+    assert "sneaker" in student_result["outfitRecommendation"].lower()
+    assert "TP. Hồ Chí Minh" in student_result["outfitRecommendation"]
 
 
 def test_homepage_has_direct_temperature_input_form() -> None:
@@ -134,8 +160,14 @@ def test_homepage_has_direct_temperature_input_form() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert 'name="location"' in response.text
+    assert 'name="location_choice"' in response.text
+    assert 'name="custom_location"' in response.text
+    assert 'name="context_choice"' in response.text
+    assert 'name="custom_context"' in response.text
     assert 'name="date_text"' in response.text
     assert 'name="temperature_c"' in response.text
     assert "Hà Nội" in response.text
+    assert "TP. Hồ Chí Minh" in response.text
+    assert "Văn phòng" in response.text
+    assert "Khác / tự nhập" in response.text
     assert "/outfit-recommendation" in response.text
