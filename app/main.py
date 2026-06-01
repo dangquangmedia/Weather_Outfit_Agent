@@ -20,7 +20,9 @@ class WeatherOutfitAgentRequest(BaseModel):
 
 class TemperatureOutfitRequest(BaseModel):
     temperature_c: float
-    context: str = "hang ngay"
+    context: str = "hằng ngày"
+    location: str = "địa điểm hiện tại"
+    date_text: str = "hôm nay"
     rain_probability: float = 0
 
 
@@ -39,6 +41,8 @@ class WeatherSummary(BaseModel):
 class TemperatureOutfitInput(BaseModel):
     temperature_c: float
     context: str
+    location: str
+    date_text: str
     rain_probability: float
 
 
@@ -91,7 +95,7 @@ def homepage() -> str:
         padding: 24px;
       }
       main {
-        width: min(100%, 560px);
+        width: min(100%, 640px);
         background: white;
         border: 1px solid #d8dee6;
         border-radius: 8px;
@@ -141,20 +145,28 @@ def homepage() -> str:
       <h1>Weather Outfit Agent</h1>
       <form id="outfit-form">
         <label>
-          Nhiet do hom nay (°C)
-          <input name="temperature_c" type="number" step="0.1" value="32" required>
+          Địa danh
+          <input name="location" type="text" value="Hà Nội" required>
         </label>
         <label>
-          Ngu canh
-          <input name="context" type="text" value="di hoc">
+          Ngày / thời điểm
+          <input name="date_text" type="text" value="Thứ 2 ngày 01/06/2026" required>
         </label>
         <label>
-          Kha nang mua (0 den 1)
+          Nhiệt độ hôm nay (°C)
+          <input name="temperature_c" type="number" step="0.1" value="36" required>
+        </label>
+        <label>
+          Ngữ cảnh
+          <input name="context" type="text" value="đi học">
+        </label>
+        <label>
+          Khả năng mưa (0 đến 1)
           <input name="rain_probability" type="number" min="0" max="1" step="0.1" value="0.2">
         </label>
-        <button type="submit">Nhan goi y outfit</button>
+        <button type="submit">Nhận gợi ý outfit</button>
       </form>
-      <pre id="result">Nhap thong tin va bam nut de test.</pre>
+      <pre id="result">Nhập thông tin và bấm nút để test.</pre>
     </main>
     <script>
       const form = document.querySelector("#outfit-form");
@@ -162,12 +174,14 @@ def homepage() -> str:
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        result.textContent = "Dang tu van...";
+        result.textContent = "Đang tư vấn...";
 
         const data = new FormData(form);
         const payload = {
+          location: String(data.get("location") || "địa điểm hiện tại"),
+          date_text: String(data.get("date_text") || "hôm nay"),
           temperature_c: Number(data.get("temperature_c")),
-          context: String(data.get("context") || "hang ngay"),
+          context: String(data.get("context") || "hằng ngày"),
           rain_probability: Number(data.get("rain_probability") || 0),
         };
 
@@ -203,5 +217,7 @@ def create_direct_outfit_recommendation(request: TemperatureOutfitRequest) -> di
     return run_temperature_outfit_agent(
         temperature_c=request.temperature_c,
         context=request.context,
+        location=request.location,
+        date_text=request.date_text,
         rain_probability=request.rain_probability,
     )

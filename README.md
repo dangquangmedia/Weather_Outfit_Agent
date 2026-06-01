@@ -57,10 +57,19 @@ Body:
 
 ```json
 {
-  "temperature_c": 32,
-  "context": "di hoc",
+  "location": "Hà Nội",
+  "date_text": "Thứ 2 ngày 01/06/2026",
+  "temperature_c": 36,
+  "context": "đi học",
   "rain_probability": 0.2
 }
+```
+
+Example output:
+
+```text
+Hôm nay Thứ 2 ngày 01/06/2026 tại Hà Nội, nhiệt độ 36°C, ngữ cảnh đi học, khả năng mưa 20%.
+Gợi ý: Áo thun cotton sáng màu, quần vải mỏng, giày thoáng và mang theo nước. Phù hợp cho đi học.
 ```
 
 ## Test

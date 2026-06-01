@@ -31,17 +31,17 @@ def fetch_json(url: str, params: dict[str, str]) -> dict[str, Any]:
 
 def recommend_outfit(temp_high: float, rain_probability: float, context: str | None = None) -> str:
     if rain_probability > 0.5:
-        recommendation = "Ao mua mong, giay de kho, mang theo o gap."
+        recommendation = "Áo mưa mỏng, giày dễ khô, mang theo ô gấp."
     elif temp_high > 30:
-        recommendation = "Ao nhe, thoang, uu tien vai cotton va mang nuoc."
+        recommendation = "Áo thun cotton sáng màu, quần vải mỏng, giày thoáng và mang theo nước."
     elif temp_high < 20:
-        recommendation = "Ao dai tay, quan dai va ao khoac nhe de giu am."
+        recommendation = "Áo dài tay, quần dài và áo khoác nhẹ để giữ ấm."
     else:
-        recommendation = "Trang phuc thoai mai, co the mang ao khoac nhe."
+        recommendation = "Trang phục thoải mái, có thể mang áo khoác nhẹ."
 
     clean_context = context.strip() if context else ""
     if clean_context:
-        return f"{recommendation} Phu hop cho {clean_context}."
+        return f"{recommendation} Phù hợp cho {clean_context}."
 
     return recommendation
 
@@ -49,11 +49,15 @@ def recommend_outfit(temp_high: float, rain_probability: float, context: str | N
 def run_temperature_outfit_agent(
     temperature_c: float,
     context: str = "hang ngay",
+    location: str = "địa điểm hiện tại",
+    date_text: str = "hôm nay",
     rain_probability: float = 0,
 ) -> dict[str, Any]:
     temperature = float(temperature_c)
     rain_chance = float(rain_probability)
-    clean_context = context.strip() or "hang ngay"
+    clean_context = context.strip() or "hằng ngày"
+    clean_location = location.strip() or "địa điểm hiện tại"
+    clean_date_text = date_text.strip() or "hôm nay"
 
     if temperature < -30 or temperature > 55:
         raise HTTPException(
@@ -71,12 +75,14 @@ def run_temperature_outfit_agent(
 
     return {
         "finalAnswer": (
-            f"Hom nay {temperature:g}°C, ngu canh {clean_context}, "
-            f"kha nang mua {rain_percent}%. Goi y: {recommendation}"
+            f"Hôm nay {clean_date_text} tại {clean_location}, nhiệt độ {temperature:g}°C, "
+            f"ngữ cảnh {clean_context}, khả năng mưa {rain_percent}%. Gợi ý: {recommendation}"
         ),
         "input": {
             "temperature_c": temperature,
             "context": clean_context,
+            "location": clean_location,
+            "date_text": clean_date_text,
             "rain_probability": rain_chance,
         },
         "outfitRecommendation": recommendation,
@@ -86,9 +92,14 @@ def run_temperature_outfit_agent(
                 "args": {
                     "temperature_c": temperature,
                     "context": clean_context,
+                    "location": clean_location,
+                    "date_text": clean_date_text,
                     "rain_probability": rain_chance,
                 },
-                "observation": f"temp={temperature:g}C, context={clean_context}, rain_probability={rain_chance:g}",
+                "observation": (
+                    f"location={clean_location}, date={clean_date_text}, "
+                    f"temp={temperature:g}C, context={clean_context}, rain_probability={rain_chance:g}"
+                ),
             },
             {
                 "tool": "recommend_outfit",
